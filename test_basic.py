@@ -66,4 +66,5 @@ f = urllib2.urlopen(url_dom)
 f.close()
 
 #Closing Browser (need QUIT instead to close all Windows) 
+chrome.close()
 chrome.quit()
