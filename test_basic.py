@@ -1,3 +1,4 @@
+# PREREQUISITES: sudo apt-get install python-selenium
 from selenium import webdriver
 
 #For Explicit Wait:
@@ -145,4 +146,5 @@ print("Radio : "+ radio.value_of_css_property("innerText"))
 print("End") """
 
 #Closing Browser (need QUIT instead to close ALL Windows) 
+chrome.close()
 chrome.quit()
