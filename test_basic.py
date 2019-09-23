@@ -1,3 +1,4 @@
+# PREREQUISITES: sudo apt-get install python-selenium
 from selenium import webdriver
 
 #For Explicit Wait:
