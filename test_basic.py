@@ -157,31 +157,15 @@ print("  4 --> Sending to DOMOTICZ")
 url_dom = '%s/json.htm?type=command&param=udevice&idx=%s&nvalue=0&svalue=%s' % (DOMOTICZ_URL, DOMOTICZ_IDX, final[0])
 
 print("  5 --> URL: {}".format(url_dom))
-f = urllib2.urlopen(url_dom)
-f.close()
-
-#elem.click()
-print("Done")
-""" 
-#Search #2 Element to Click on Page (Cities)
-#Wait Map to be Clickable + Display Index + Click on Element (City Map)
-elem2 = WebDriverWait(chrome, 90).until(
-EC.element_to_be_clickable((By.XPATH, u'//*[@id="map"]/div[1]/div[2]/div[3]/img[20]')))
-print("8. Clicking on City")
-print("z-index: "+ elem2.value_of_css_property("z-index"))
-print("Clicking City...")
-elem2.click()
-print("Done")
-
-#Search #3 Element to Display Results (Lyon?)
-city = chrome.find_element_by_xpath(u'//*[@id="markerpage"]/div[1]/h1')
-radio = chrome.find_element_by_xpath(u'//*[@id="details-list"]/li[2]')
-
-#Display City and Data for Element (Lyon Data?)
-print("City  : "+ city.value_of_css_property("innerText"))
-print("Radio : "+ radio.value_of_css_property("innerText"))
-print("End") """
+try:
+    f = urllib2.urlopen(url_dom)
+    print("SUCCES: Results successfully published to Domoticz Server")
+    f.close()
+except:
+    print("ERROR: Cannot publish results to Domoticz Server")
+    f.close()
 
 #Closing Browser (need QUIT instead to close ALL Windows) 
+print("End - Closing Browser")
 chrome.close()
 chrome.quit()
