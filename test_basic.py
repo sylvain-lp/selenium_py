@@ -1,18 +1,26 @@
 from selenium import webdriver
-
+import time
 #For Explicit Wait:
 from selenium.webdriver.common.by  import By
 from selenium.webdriver.support.ui import WebDriverWait
+#from selenium.common.exceptions    import TimeoutException, NoSuchElementException
 from selenium.webdriver.support    import expected_conditions as EC
 
 #To Send to Domoticz
 import urllib2
  
+#Defining Specific Variables (City & Domoticz Server)
+SOURCE_URL   = "http://teleray.irsn.fr"
+CITY_ID      = 1036
+CITY_NAME    = "LYON"
+DOMOTICZ_URL = "http://esylvain.hd.free.fr:8084"  # "http://192.168.1.30:8084"
+DOMOTICZ_IDX = 52
+
 print("1. Setting Driver Options (Mobile)")
 options = webdriver.ChromeOptions()
 options.add_argument('--no-sandbox')         # Bypass OS security model, MUST BE THE VERY FIRST OPTION
 options.add_argument('--headless')           # Seems deprecated, replaced with "headless = True" below
-options.headless = True
+# options.headless = True                    # Gives an Error on EC2 / Ubuntu
 options.add_argument('start-maximized')      # open Browser in maximized mode
 options.add_argument('disable-infobars')     # disabling infobars
 options.add_argument('--disable-extensions') #disabling extensions
@@ -34,7 +42,8 @@ chrome = webdriver.Chrome(chrome_options=options)
 
 #Open Target URL and check Title 
 print("3. Open Web Site")
-chrome.get("http://teleray.irsn.fr")
+chrome.get(SOURCE_URL)
+#chrome.get("http://teleray.irsn.fr")
 #chrome.get("http://www.google.com")
 
 print("4. Page Result Title: {}".format(chrome.title.encode('utf-8')))
@@ -59,7 +68,10 @@ print("5 Setting Favorites") # to: '{}'".format(fav) #"{\'list\':[{\"id\":1036,\
 # TARGET UNESCAPED: localStorage.setItem("favorites","{'list':[{\"id\":1036,\"name\":\"LYON\"}]}")
 # TARGET ATTEMPT: fav = "{'list':[{\"id\":1036,\"name\":\"LYON\"}]}"
 # TARGET OK !!! fav = "{\\\"name\\\":\\\"LYON\\\"}"
-fav = "{\\\"list\\\":[{\\\"id\\\":1036,\\\"name\\\":\\\"LYON\\\"}]}"
+#fav = "{\\\"list\\\":[{\\\"id\\\":1036,\\\"name\\\":\\\"LYON\\\"}]}"
+#fav = "{\\\"list\\\":[{\\\"id\\\":" + CITY_ID + ",\\\"name\\\":\\\"" + CITY_NAME + "\\\"}]}"
+fav = "{\\\"list\\\":[{\\\"id\\\":%s,\\\"name\\\":\\\"%s\\\"}]}" % (CITY_ID, CITY_NAME) 
+
 scr = "window.localStorage.setItem(\"favorites\",\"{}\")".format(fav)
 print("  Running Script: {}".format(scr))
 chrome.execute_script(scr)
@@ -84,40 +96,57 @@ while i < lng:
     print("  {}. Item: {}\t Value: {}".format(i,ky0,itm)) 
     i+=1
 
-print("7. Opening Favorites Page...with LYON")
+print("7. Opening Favorites Page...with " + CITY_NAME)
 #USING URL chrome.get("http://teleray.irsn.fr/#favoritespage")
 
 #USING "CLICK"
 clickfav = WebDriverWait(chrome, 10).until(
     EC.element_to_be_clickable((By.XPATH, u'//*[@id="favorite"]')))
 print("   FOUND Favorite Icon to Click: {}".format(clickfav.get_attribute("href")))
-print("   CLICKING!")
+#time.sleep(9)
+print("   CLICKING Favorite!")
 clickfav.click()
 print("   Done")
 print("   Page Result Title: {}".format(chrome.title.encode('utf-8')))
 #html = chrome.page_source
 #print(html)
 #Search #3 Element to Display Results (Lyon?)
-print("8. Reading LYON Metrics from Favorites Page")
+print("8. Reading " + CITY_NAME + " Metrics from Favorites Page")
 #lyon = WebDriverWait(chrome, 10).until(
 #EC.presence_of_element_located((By.XPATH, u'//*[@id="fav1036measure"]')))
 
-lyon = WebDriverWait(chrome, 10).until(
-    EC.presence_of_element_located((By.XPATH, u'//*[@id="fav1036measure"]')))
+time.sleep(9)
+try:
+    city = WebDriverWait(chrome, 10).until(
+         #EC.presence_of_element_located((By.XPATH, u'//*[@id="fav1036measure"]')))
+         EC.presence_of_element_located((By.XPATH, '//*[@id="fav1036measure"]')))
+#except TimeoutException as ex:
+#     print("   Timeout while waiting for FAV1036MEASURE element in the page")
+#     print ex.message
+
+except: # NoSuchElementException as ex:
+     print("   No Such Element while waiting for FAV1036MEASURE element in the page")
+     #print ex.message
 
 #EC.presence_of_element_located((By.ID("fav1036measure"))))
 #lyon = chrome.find_element_by_xpath(u'//*[@id="fav1036measure"]')
-print("   LYON Fav: "+ lyon.get_attribute("innerText").encode('utf-8'))
+#print("   LYON Fav: "+ lyon.get_attribute("innerText").encode('utf-8'))
+print("   LYON Fav: "+ city.get_attribute("innerText"))
+
 # SELECTOR: #fav1036measure
 #lyon = chrome.find_element_by_xpath(u'//*[@id="fav1036measure"]')
-print("  1 --> {}".format(lyon))
-metric=lyon.get_attribute("innerText").encode('utf-8')
+print("  1 --> {}".format(city))
+metric=city.get_attribute("innerText").encode('utf-8')
 print("  2 --> {}".format(metric))
 final=metric.split(" ")
-print("  3 --> FINAL: {} nSv/h - TIME:{}".format(final[0], final[3]))
+#print("  3 --> FINAL: {} nSv/h - TIME:{}".format(final[0])) # Index error on ", final[3]))"
+print("  3 --> FINAL: {} nSv/h".format(final[0])) 
 print("  4 --> Sending to DOMOTICZ")
 
-url_dom = 'http://192.168.1.30:8084/json.htm?type=command&param=udevice&idx=52&nvalue=0&svalue=' + final[0]
+#url_dom = 'http://esylvain.hd.free.fr:8084/json.htm?type=command&param=udevice&idx=52&nvalue=0&svalue=' + final[0]
+#url_dom = DOMOTICZ_URL + '/json.htm?type=command&param=udevice&idx=' + DOMOTICZ_IDX +'&nvalue=0&svalue=' + final[0]
+url_dom = '%s/json.htm?type=command&param=udevice&idx=%s&nvalue=0&svalue=%s' % (DOMOTICZ_URL, DOMOTICZ_IDX, final[0])
+
 print("  5 --> URL: {}".format(url_dom))
 f = urllib2.urlopen(url_dom)
 f.close()
@@ -145,4 +174,5 @@ print("Radio : "+ radio.value_of_css_property("innerText"))
 print("End") """
 
 #Closing Browser (need QUIT instead to close ALL Windows) 
+chrome.close()
 chrome.quit()
