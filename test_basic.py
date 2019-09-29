@@ -159,11 +159,10 @@ url_dom = '%s/json.htm?type=command&param=udevice&idx=%s&nvalue=0&svalue=%s' % (
 print("  5 --> URL: {}".format(url_dom))
 try:
     f = urllib2.urlopen(url_dom)
-    print("SUCCES: Results successfully published to Domoticz Server")
+    print("            SUCCES: Results successfully published to Domoticz Server")
     f.close()
 except:
-    print("ERROR: Cannot publish results to Domoticz Server")
-    f.close()
+    print("            ERROR: Cannot publish results to Domoticz Server")
 
 #Closing Browser (need QUIT instead to close ALL Windows) 
 print("End - Closing Browser")
