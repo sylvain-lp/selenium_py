@@ -8,7 +8,9 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support    import expected_conditions as EC
 
 #To Send to Domoticz
-import urllib2
+#import urllib2
+import requests
+from requests.auth import HTTPBasicAuth
 
 #Defining Specific variables (City & Domoticz Server)
 SOURCE_URL   = "http://teleray.irsn.fr"
@@ -158,11 +160,14 @@ url_dom = '%s/json.htm?type=command&param=udevice&idx=%s&nvalue=0&svalue=%s' % (
 
 print("  5 --> URL: {}".format(url_dom))
 try:
-    f = urllib2.urlopen(url_dom)
-    print("            SUCCES: Results successfully published to Domoticz Server")
-    f.close()
-except:
-    print("            ERROR: Cannot publish results to Domoticz Server")
+    r = requests.get(url_dom, auth=HTTPBasicAuth('external_domoticz_id', 'externaldomoticzpwd'))
+
+    #f = urllib2.urlopen(url_dom)
+    print("       SUCCES: Results successfully published to Domoticz Server. Result: %s" % r)
+    #f.close()
+except requests.exceptions.RequestException as e:  # This is the correct syntax
+    print("       ERROR: Cannot publish results to Domoticz Server. Err: %s" % e )
+    sys.exit(1)
 
 #Closing Browser (need QUIT instead to close ALL Windows) 
 print("End - Closing Browser")
