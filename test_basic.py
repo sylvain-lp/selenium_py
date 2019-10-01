@@ -1,10 +1,11 @@
 # PREREQUISITES: sudo apt-get install python-selenium
-from selenium import webdriver
 import time
+from selenium import webdriver
+
 #For Explicit Wait:
 from selenium.webdriver.common.by  import By
 from selenium.webdriver.support.ui import WebDriverWait
-#from selenium.common.exceptions    import TimeoutException, NoSuchElementException
+#from selenium.common.exceptions   import TimeoutException, NoSuchElementException
 from selenium.webdriver.support    import expected_conditions as EC
 
 #To Send to Domoticz
@@ -17,14 +18,6 @@ SOURCE_URL   = "http://teleray.irsn.fr"
 CITY_ID      = 1036
 CITY_NAME    = "LYON"
 DOMOTICZ_URL = "http://192.168.1.30:8084"
-DOMOTICZ_IDX = 52
-
- 
-#Defining Specific Variables (City & Domoticz Server)
-SOURCE_URL   = "http://teleray.irsn.fr"
-CITY_ID      = 1036
-CITY_NAME    = "LYON"
-DOMOTICZ_URL = "http://esylvain.hd.free.fr:8084"  # "http://192.168.1.30:8084"
 DOMOTICZ_IDX = 52
 
 print("1. Setting Driver Options (Mobile)")
